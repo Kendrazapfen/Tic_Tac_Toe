@@ -12,6 +12,12 @@ let fields = [
 
 let currentPlayer = 'circle';
 
+const winningCombinations = [
+    [0, 1, 2], [3, 4, 5], [6, 7, 8], // Horizontale Gewinnkombinationen
+    [0, 3, 6], [1, 4, 7], [2, 5, 8], // Vertikale Gewinnkombinationen
+    [0, 4, 8], [2, 4, 6]             // Diagonale Gewinnkombinationen
+];
+
 function init() {
     render();
 }
@@ -25,13 +31,13 @@ function render() {
         for (let j = 0; j < 3; j++) {
             let index = i * 3 + j;
             let value = fields[index];
-            let symbol ='';
+            let symbol = '';
             if (value === 'circle') {
                 symbol = generateCircleSVG();
             } else if (value === 'cross') {
                 symbol = generateCrossSVG();
             }
-            table +=`<td onclick="handleClick(this, ${index})">${symbol}</td>`;
+            table += `<td onclick="handleClick(this, ${index})">${symbol}</td>`;
         }
         table += '</tr>';
     }
@@ -67,13 +73,63 @@ function generateCrossSVG() {
             </svg>`;
 }
 
-function handleClick(index) {
+function handleClick(cell, index) {
     if (fields[index] === null) {
         fields[index] = currentPlayer;
         cell.innerHTML = currentPlayer === 'circle' ? generateCircleSVG() : generateCrossSVG();
         cell.onclick = null;
         currentPlayer = currentPlayer === 'circle' ? 'cross' : 'circle';
+        if (isGameFinished()) {
+            const winCombination = getWinningCombination();
+            drawWinningLine(winCombination);
+        }
+
     }
 }
 
+function isGameFinished() {
+    return fields.every((field) => field !== null) || getWinningCombination() !== null;
+}
 
+function getWinningCombination() {
+    for (let i = 0; i < winningCombinations.length; i++) {
+        const [a, b, c] = winningCombinations[i];
+        if (fields[a] === fields[b] && fields[b] === fields[c] && fields[a] !== null) {
+            return winningCombinations[i];
+        }
+    }
+    return null;
+}
+
+function drawWinningLine(combination) {
+    const lineColor = '#ffffff';
+    const lineWidth = 5;
+    const startCell = document.querySelectorAll(`td`)[combination[0]];
+    const endCell = document.querySelectorAll(`td`)[combination[2]];
+    const startRect = startCell.getBoundingClientRect();
+    const endRect = endCell.getBoundingClientRect();
+    const contentRect = document.getElementById('content').getBoundingClientRect();
+    const lineLength = Math.sqrt(
+        Math.pow(endRect.left - startRect.left, 2) + Math.pow(endRect.top - startRect.top, 2)
+    );
+    const lineAngle = Math.atan2(endRect.top - startRect.top, endRect.left - startRect.left);
+
+    const line = document.createElement('div');
+    line.style.position = 'absolute';
+    line.style.width = `${lineLength}px`;
+    line.style.height = `${lineWidth}px`;
+    line.style.backgroundColor = lineColor;
+    line.style.top = `${startRect.top + startRect.height / 2 - lineWidth / 2 - contentRect.top}px`;
+    line.style.left = `${startRect.left + startRect.width / 2}px`;
+
+    
+    line.style.transform = `rotate(${lineAngle}rad)`;
+    line.style.transformOrigin = `top left`;
+    document.getElementById('content').appendChild(line);
+}
+
+function resetGame() {
+    fields = Array(9).fill(null);
+    currentPlayer = 'circle';
+    render();
+}

@@ -20,6 +20,7 @@ h1{
     justify-content: center;
     align-items: center;
     margin-top: 300px;
+    position: relative;
 }
 
 td {
@@ -62,4 +63,24 @@ table tr td:last-child {
 
 .cross {
     color: white;
+}
+
+.center{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #4c78af;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    margin-top: 24px;
+}
+
+button:hover {
+    background-color: #7f94ad;
 }
